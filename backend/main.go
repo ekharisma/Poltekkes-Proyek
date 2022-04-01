@@ -21,6 +21,7 @@ func main() {
 	router.GET(ROOT+"user", userController.GetUsers)
 	router.GET(ROOT+"user/:id", userController.GetUserById)
 	router.POST(ROOT+"user", userController.CreateUser)
-
+	router.PATCH(ROOT+"user/:id", userController.PatchUser)
+	router.DELETE(ROOT+"user/:id", userController.DeleteUser)
 	router.Run(":8080")
 }

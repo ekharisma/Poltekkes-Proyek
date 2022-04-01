@@ -1,15 +1,18 @@
 package model
 
 import (
+	"log"
+
 	"github.com/ekharisma/poltekkes-webservice/entity"
 	"gorm.io/gorm"
-	"log"
 )
 
 type IUserModel interface {
 	GetById(id uint) (*entity.User, error)
 	GetAll() ([]*entity.User, error)
 	Create(userModel *entity.User) error
+	Patch(id uint, params ...string) error
+	Delete(id uint) error
 }
 
 type UserModel struct {
@@ -45,6 +48,22 @@ func (u UserModel) GetAll() ([]*entity.User, error) {
 
 func (u UserModel) Create(users *entity.User) error {
 	if err := u.db.Create(users).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u UserModel) Patch(id uint, params ...string) error {
+	users := &entity.User{}
+	if err := u.db.Model(users).Where("id", id).Updates(entity.User{Name: params[0], Email: params[1]}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u UserModel) Delete(id uint) error {
+	users := &entity.User{}
+	if err := u.db.Delete(users, id).Error; err != nil {
 		return err
 	}
 	return nil
