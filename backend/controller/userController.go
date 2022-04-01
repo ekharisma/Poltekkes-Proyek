@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/ekharisma/poltekkes-webservice/entity"
 	"github.com/ekharisma/poltekkes-webservice/model"
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,8 @@ type IUserController interface {
 	CreateUser(c *gin.Context)
 	GetUserById(c *gin.Context)
 	GetUsers(c *gin.Context)
+	UpdateUser(c *gin.Context)
+	DeleteUser(c *gin.Context)
 }
 
 type UserController struct {
@@ -65,14 +68,17 @@ func (u UserController) GetUserById(c *gin.Context) {
 
 func (u UserController) GetUsers(c *gin.Context) {
 	users, err := u.UserModel.GetAll()
+	fmt.Println(len(users))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
-	} else if len(users) == 0 {
+	}
+	if len(users) == 0 {
+		fmt.Println("Hasil query 0")
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": err.Error(),
+			"error": "User Table is empty",
 		})
 		return
 	}
@@ -80,4 +86,45 @@ func (u UserController) GetUsers(c *gin.Context) {
 		users = make([]*entity.User, 0)
 	}
 	c.JSON(http.StatusOK, users)
+}
+
+func (u UserController) UpdateUser(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+	var payload entity.User
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": "Wrong payload format",
+		})
+		return
+	}
+	if err := u.UserModel.Update(id, &payload); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+	c.Status(http.StatusAccepted)
+}
+
+func (u UserController) DeleteUser(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": "Bad Request",
+		})
+		return
+	}
+	if err := u.UserModel.Delete(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"Error": err.Error(),
+		})
+		return
+	}
+	c.Status(http.StatusAccepted)
 }

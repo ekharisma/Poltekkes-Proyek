@@ -10,17 +10,28 @@ import (
 
 func main() {
 	const ROOT = "/api/"
+	const QOS = 0
 	service.CreatePostgresClient(constant.DBHost, constant.DBUsername, constant.DBPassword, constant.DBPort, constant.DBName)
 	service.CreateMqttClient(constant.Broker, constant.MqttPort)
 	router := gin.Default()
 	db := service.GetPostgresDBClient()
+	mqttClient := service.GetMqttClient()
 	//mqttClient := service.GetMqttClient()
 	userModel := model.CreateUserModel(db)
+	temperatureModel := model.CreateTemperatureModel(db)
 	userController := controller.CreateUserController(userModel)
+	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db)
 
 	router.GET(ROOT+"user", userController.GetUsers)
 	router.GET(ROOT+"user/:id", userController.GetUserById)
 	router.POST(ROOT+"user", userController.CreateUser)
+	router.PATCH(ROOT+"user/:id", userController.UpdateUser)
+	router.DELETE(ROOT+"user/:id", userController.DeleteUser)
 
-	router.Run(":8080")
+	mqttClient.Subscribe("/poltekkes/temperature", QOS, mqttController.TemperatureProcessor)
+
+	err := router.Run(":8080")
+	if err != nil {
+		panic("Error. Reason : " + err.Error())
+	}
 }
