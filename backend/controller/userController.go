@@ -2,11 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/ekharisma/poltekkes-webservice/entity"
 	"github.com/ekharisma/poltekkes-webservice/model"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type IUserController interface {

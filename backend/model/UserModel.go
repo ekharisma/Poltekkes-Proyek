@@ -1,10 +1,11 @@
 package model
 
 import (
-	"github.com/ekharisma/poltekkes-webservice/entity"
-	"gorm.io/gorm"
 	"log"
 	"time"
+
+	"github.com/ekharisma/poltekkes-webservice/entity"
+	"gorm.io/gorm"
 )
 
 type IUserModel interface {
