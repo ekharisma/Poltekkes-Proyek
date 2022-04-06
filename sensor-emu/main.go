@@ -10,7 +10,7 @@ import (
 )
 
 type Payload struct {
-	Timestamp   int64
+	Timestamp   time.Time
 	Temperature float32
 }
 
@@ -20,12 +20,12 @@ func main() {
 	for {
 		data := sensoremu.ProduceData()
 		time.Sleep(2 * time.Second)
-		fmt.Println("Data produced : ", data)
 		payload := &Payload{
-			Timestamp:   time.Now().UnixMilli(),
+			Timestamp:   time.Now(),
 			Temperature: data,
 		}
 		message, _ := json.Marshal(payload)
+		fmt.Printf("Data produced : %v \n", payload)
 		client.Publish("/emulator/data", 2, false, message)
 	}
 }

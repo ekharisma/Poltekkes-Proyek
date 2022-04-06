@@ -10,7 +10,7 @@ import (
 
 func main() {
 	const ROOT = "/api/"
-	const QOS = 0
+	const QOS = 2
 	service.CreatePostgresClient(constant.DBHost, constant.DBUsername, constant.DBPassword, constant.DBPort, constant.DBName)
 	service.CreateMqttClient(constant.Broker, constant.MqttPort)
 	router := gin.Default()
@@ -20,7 +20,8 @@ func main() {
 	userModel := model.CreateUserModel(db)
 	temperatureModel := model.CreateTemperatureModel(db)
 	userController := controller.CreateUserController(userModel)
-	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db)
+	emailController := controller.CreateEmailController(userModel)
+	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db, emailController)
 
 	router.GET(ROOT+"user", userController.GetUsers)
 	router.GET(ROOT+"user/:id", userController.GetUserById)
@@ -28,7 +29,7 @@ func main() {
 	router.PATCH(ROOT+"user/:id", userController.UpdateUser)
 	router.DELETE(ROOT+"user/:id", userController.DeleteUser)
 
-	mqttClient.Subscribe("/poltekkes/temperature", QOS, mqttController.TemperatureProcessor)
+	mqttClient.Subscribe("/emulator/data", QOS, mqttController.TemperatureProcessor)
 
 	err := router.Run(":8080")
 	if err != nil {

@@ -1,11 +1,13 @@
 package entity
 
 import (
-	"gorm.io/gorm"
+	"time"
 )
 
 type Temperature struct {
-	gorm.Model
-	Time        int64
+	//gorm.Model
+	ID          uint `gorm:"primaryKey;autoincrement:true"`
+	Timestamp   time.Time
 	Temperature float64
+	TimeCreated time.Time
 }
