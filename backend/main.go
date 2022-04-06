@@ -20,6 +20,7 @@ func main() {
 	userModel := model.CreateUserModel(db)
 	temperatureModel := model.CreateTemperatureModel(db)
 	userController := controller.CreateUserController(userModel)
+	temperatureController := controller.CreateTemperatureController(temperatureModel)
 	emailController := controller.CreateEmailController(userModel)
 	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db, emailController)
 
@@ -28,6 +29,8 @@ func main() {
 	router.POST(ROOT+"user", userController.CreateUser)
 	router.PATCH(ROOT+"user/:id", userController.UpdateUser)
 	router.DELETE(ROOT+"user/:id", userController.DeleteUser)
+
+	router.POST(ROOT+"temperature", temperatureController.GetTemperatureByMonth)
 
 	mqttClient.Subscribe("/emulator/data", QOS, mqttController.TemperatureProcessor)
 

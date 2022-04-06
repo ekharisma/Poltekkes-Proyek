@@ -1,14 +1,16 @@
 package model
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/ekharisma/poltekkes-webservice/entity"
 	"gorm.io/gorm"
-	"log"
 )
 
 type ITemperatureModel interface {
 	StoreTemperature(temperature *entity.Temperature) error
-	GetTemperatureByMonth() ([]*entity.Temperature, error)
+	GetTemperatureByMonth(month, year int) ([]*entity.Temperature, error)
 }
 
 type TemperatureModel struct {
@@ -30,10 +32,22 @@ func (t TemperatureModel) StoreTemperature(temperature *entity.Temperature) erro
 	return nil
 }
 
-func (t TemperatureModel) GetTemperatureByMonth() ([]*entity.Temperature, error) {
+func (t TemperatureModel) GetTemperatureByMonth(month, year int) ([]*entity.Temperature, error) {
 	var temperature []*entity.Temperature
-	if err := t.db.Find(&temperature).Error; err != nil {
+	thisDate, toDate := constructDate(month, year)
+	if err := t.db.Find(&temperature).Where("timestamp BETWEEN ? AND ?", thisDate, toDate).Error; err != nil {
 		return nil, err
 	}
 	return temperature, nil
+}
+
+func constructDate(month, year int) (thisDate, toDate string) {
+	if month == 12 {
+		thisDate = fmt.Sprintf("%v-%v-01", year, month)
+		toDate = fmt.Sprintf("%v-%v-01", year+1, month)
+		return
+	}
+	thisDate = fmt.Sprintf("%v-%v-01", year, month)
+	toDate = fmt.Sprintf("%v-%v-01", year, month+1)
+	return
 }
