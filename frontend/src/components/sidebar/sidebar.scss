@@ -1,0 +1,13 @@
+.sidebar{
+    flex: 1;
+    border-right: 1px solid #eeeeee;
+    min-height: 90vh;
+    background-color: white;
+
+    .top{
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
