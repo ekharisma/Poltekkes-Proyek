@@ -13,17 +13,6 @@ type EmailController struct {
 	userModel model.IUserModel
 }
 
-func (e EmailController) getEmailToSend() (emails []string) {
-	users, err := e.userModel.GetAll()
-	if err != nil {
-		return nil
-	}
-	for _, user := range users {
-		emails = append(emails, user.Email)
-	}
-	return emails
-}
-
 type IEmailController interface {
 	SendEmail(temperature entity.Temperature)
 	getEmailToSend() []string
@@ -33,6 +22,17 @@ func CreateEmailController(userModel model.IUserModel) IEmailController {
 	return &EmailController{
 		userModel: userModel,
 	}
+}
+
+func (e EmailController) getEmailToSend() (emails []string) {
+	users, err := e.userModel.GetAll()
+	if err != nil {
+		return nil
+	}
+	for _, user := range users {
+		emails = append(emails, user.Email)
+	}
+	return emails
 }
 
 func (e EmailController) SendEmail(temperature entity.Temperature) {

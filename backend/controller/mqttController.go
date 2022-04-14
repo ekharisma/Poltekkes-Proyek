@@ -16,18 +16,20 @@ type IMqttController interface {
 }
 
 type MqttController struct {
-	TemperatureModel model.ITemperatureModel
-	Client           *mqtt.Client
-	db               *gorm.DB
-	emailController  IEmailController
+	TemperatureModel   model.ITemperatureModel
+	Client             *mqtt.Client
+	db                 *gorm.DB
+	telegramController ITelegramController
+	timeBefore         time.Time
+	timeAfter          time.Time
 }
 
-func CreateMqttController(model model.ITemperatureModel, client *mqtt.Client, db *gorm.DB, emailController IEmailController) IMqttController {
+func CreateMqttController(model model.ITemperatureModel, client *mqtt.Client, db *gorm.DB, telegramController ITelegramController) IMqttController {
 	return &MqttController{
-		TemperatureModel: model,
-		Client:           client,
-		db:               db,
-		emailController:  emailController,
+		TemperatureModel:   model,
+		Client:             client,
+		db:                 db,
+		telegramController: telegramController,
 	}
 }
 
@@ -44,8 +46,9 @@ func (mc *MqttController) TemperatureProcessor(client mqtt.Client, message mqtt.
 		log.Panicln("Error. Reason : ", err.Error())
 	}
 	if isTemperatureAnomaly(temperature.Temperature) {
-		fmt.Println("Temperature Anomaly Detected!")
-		go mc.emailController.SendEmail(temperature)
+		mc.timeBefore = time.Now()
+		fmt.Println("Temperature Anomaly Detected! with temperature :", temperature.Temperature)
+		go mc.telegramController.SendMessage(temperature)
 	}
 }
 
@@ -56,4 +59,8 @@ func isTemperatureAnomaly(temperature float64) bool {
 		return true
 	}
 	return false
+}
+
+func isAboveThreshold() {
+
 }

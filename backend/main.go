@@ -11,18 +11,19 @@ import (
 func main() {
 	const ROOT = "/api/"
 	const QOS = 2
+	service.CreateTelegramBotClient()
 	service.CreatePostgresClient(constant.DBHost, constant.DBUsername, constant.DBPassword, constant.DBPort, constant.DBName)
 	service.CreateMqttClient(constant.Broker, constant.MqttPort)
 	router := gin.Default()
 	db := service.GetPostgresDBClient()
 	mqttClient := service.GetMqttClient()
-	//mqttClient := service.GetMqttClient()
+	telegramClient := service.GetTelegramBotClient()
 	userModel := model.CreateUserModel(db)
 	temperatureModel := model.CreateTemperatureModel(db)
 	userController := controller.CreateUserController(userModel)
 	temperatureController := controller.CreateTemperatureController(temperatureModel)
-	emailController := controller.CreateEmailController(userModel)
-	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db, emailController)
+	telegramController := controller.CreateTelegramController(telegramClient)
+	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db, telegramController)
 
 	router.GET(ROOT+"user", userController.GetUsers)
 	router.GET(ROOT+"user/:id", userController.GetUserById)
@@ -31,6 +32,7 @@ func main() {
 	router.DELETE(ROOT+"user/:id", userController.DeleteUser)
 
 	router.POST(ROOT+"temperature", temperatureController.GetTemperatureByMonth)
+	router.POST(ROOT+"temperature/download", temperatureController.GetTemperatureFile)
 
 	mqttClient.Subscribe("/emulator/data", QOS, mqttController.TemperatureProcessor)
 

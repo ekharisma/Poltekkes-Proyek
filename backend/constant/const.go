@@ -16,4 +16,6 @@ const (
 	SMTPSenderName = "Poltekkes Temperature Observatory"
 	SMTPEmail      = "backendprogrammer43@gmail.com"
 	SMTPPassword   = "CahayaMei123"
+	//Telegram
+	TelegramToken = "5137342139:AAE1OAGP0VxNyQTQV9tdT8hH8zkBTpx4WfE"
 )
