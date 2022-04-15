@@ -1,3 +1,4 @@
+import React from "react";
 import Home from "./pages/home/Home";
 import Notify from "./pages/notify/Notify";
 import {

@@ -5,5 +5,11 @@
         background-color: #F8F8F8;
         min-height: 90vh;
         flex: 10;
+        padding: 32px;
+
+        .widgets{
+            display: flex;
+            gap: 24px;
+        }
     }
 }
