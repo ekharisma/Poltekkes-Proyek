@@ -17,5 +17,7 @@ const (
 	SMTPEmail      = "backendprogrammer43@gmail.com"
 	SMTPPassword   = "CahayaMei123"
 	//Telegram
-	TelegramToken = "5137342139:AAE1OAGP0VxNyQTQV9tdT8hH8zkBTpx4WfE"
+	TelegramChannel = "vaccinebox"
+	TelegramURI     = "https://api.telegram.org/bot%v/sendMessage?chat_id=@%v&text=%v"
+	TelegramToken   = "5137342139:AAE1OAGP0VxNyQTQV9tdT8hH8zkBTpx4WfE"
 )
