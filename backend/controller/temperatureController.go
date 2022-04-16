@@ -1,14 +1,21 @@
 package controller
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/base64"
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"image/jpeg"
 	"image/png"
+	"io"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ekharisma/poltekkes-webservice/entity"
 	"github.com/ekharisma/poltekkes-webservice/model"
@@ -55,73 +62,135 @@ func (t *TemperatureController) GetTemperatureFile(c *gin.Context) {
 		})
 		return
 	}
-	_, err = t.TemperatureModel.GetTemperatureByMonth(payload.Month, payload.Year)
+	temperature, _ := t.TemperatureModel.GetTemperatureByMonth(payload.Month, payload.Year)
+	csvFile, err := processCsv(temperature)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	if err = processImage(payload.Image); err != nil {
+	var filename string
+	if filename, err = processImage(payload.Image); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	c.Status(http.StatusAccepted)
+	fmt.Println("Filename : ", filename)
+	zipFile, _ := processZipFile([]string{csvFile, filename})
+	c.Header("Content-Type", "application/zip")
+	c.Header("Content-Disposition", "attachment; filename='data.zip'")
+	c.File(zipFile)
 }
 
-func processImage(image string) error {
-	splitBase := strings.Split(image, ",")
-	if strings.Contains(splitBase[0], "png") {
-		// err := convertBaseToPng(splitBase[1])
-		return nil
-	} else if strings.Contains(splitBase[0], "jpg") {
-		err := convertBaseToJpg(splitBase[1])
-		return err
-	} else {
-		return errors.New("file not supported")
+func processCsv(temperature []*entity.Temperature) (string, error) {
+	fileName := fmt.Sprintf("data/temperature-data-%v-%v.csv", time.Now().Month(), time.Now().Year())
+	csvFile, err := os.Create(fileName)
+	defer csvFile.Close()
+	if err != nil {
+		return "", err
 	}
+	csvWriter := csv.NewWriter(csvFile)
+	defer csvWriter.Flush()
+	var data [][]string
+	for _, record := range temperature {
+		temperatureStr := fmt.Sprintf("%f", record.Temperature)
+		row := []string{strconv.Itoa(int(record.ID)), temperatureStr, record.TimeCreated.String()}
+		data = append(data, row)
+	}
+	err = csvWriter.WriteAll(data)
+	if err != nil {
+		return "", err
+	}
+	return fileName, nil
 }
 
-func convertBaseToJpg(s string) error {
-	jpgDecoded := base64.NewDecoder(base64.StdEncoding.WithPadding(base64.NoPadding), strings.NewReader(strings.TrimSpace(s)))
-	jpgImage, err := jpeg.Decode(jpgDecoded)
+func processZipFile(filepaths []string) (string, error) {
+	fmt.Println("creating zip archive...")
+	zipName := fmt.Sprintf("download/archive-%v-%v.zip", time.Now().Month(), time.Now().Year())
+	archive, err := os.Create(zipName)
 	if err != nil {
-		fmt.Println("Error decoded jpg. Reason : ", err.Error())
-		return err
+		log.Panicln(err)
 	}
-	file, err := os.Create("images/image.jpg")
+	defer archive.Close()
+	zipWriter := zip.NewWriter(archive)
+
+	log.Println("opening first file...")
+	f1, err := os.Open(filepaths[0])
 	if err != nil {
-		fmt.Println("Error creating jpg. Reason : ", err.Error())
-		return err
+		log.Panicln(err)
 	}
-	err = png.Encode(file, jpgImage)
+	defer f1.Close()
+
+	fmt.Println("writing first file to archive...")
+	w1, err := zipWriter.Create("download/" + filepaths[0])
 	if err != nil {
-		fmt.Println("Error encoding jpg. Reason : ", err.Error())
-		return err
+		log.Panicln(err)
 	}
-	defer file.Close()
-	return nil
+	if _, err := io.Copy(w1, f1); err != nil {
+		log.Panicln(err)
+	}
+
+	log.Println("opening second file")
+	f2, err := os.Open(filepaths[1])
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer f2.Close()
+
+	fmt.Println("writing second file to archive...")
+	w2, err := zipWriter.Create("download/" + filepaths[1])
+	if err != nil {
+		log.Panicln(err)
+	}
+	if _, err := io.Copy(w2, f2); err != nil {
+		log.Panicln(err)
+	}
+	log.Println("closing zip archive...")
+	zipWriter.Close()
+	return zipName, nil
 }
 
-// func convertBaseToPng(s string) error {
-// 	pngDecoded, _ := base64.StdEncoding.DecodeString(s)
-// 	pngImage, err := png.Decode(pngDecoded)
-// 	if err != nil {
-// 		fmt.Println("Error decoded png. Reason : ", err.Error())
-// 		return err
-// 	}
-// 	file, err := os.Create("Coba.png")
-// 	if err != nil {
-// 		fmt.Println("Error creating png. Reason : ", err.Error())
-// 		return err
-// 	}
-// 	err = png.Encode(file, pngImage)
-// 	if err != nil {
-// 		fmt.Println("Error encoding png.  Reason : ", err.Error())
-// 		return err
-// 	}
-// 	defer file.Close()
-// 	return nil
-// }
+func processImage(base string) (string, error) {
+	index := strings.Index(base, ";base64,")
+	if index < 0 {
+		log.Panicln("Invalid Image")
+		return "", errors.New("Invalid file")
+	}
+	imageType := base[11:index]
+	log.Println("Image type : ", imageType)
+	unbased, _ := base64.StdEncoding.DecodeString(base[index+8:])
+	r := bytes.NewReader(unbased)
+	switch imageType {
+	case "png":
+		filename := fmt.Sprintf("data/Image-%v-%v.png", time.Now().Month(), time.Now().Year())
+		img, err := png.Decode(r)
+		if err != nil {
+			log.Panicln("Bad PNG, ", err.Error())
+			return "", err
+		}
+		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0777)
+		if err != nil {
+			log.Panicln("Cannot open file")
+			return "", err
+		}
+		png.Encode(file, img)
+		return filename, nil
+	case "jpg":
+		filename := fmt.Sprintf("data/Image-%v-%v.png", time.Now().Month(), time.Now().Year())
+		img, err := jpeg.Decode(r)
+		if err != nil {
+			log.Panicln("Bad JPG, ", err.Error())
+			return "", err
+		}
+		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0777)
+		if err != nil {
+			log.Panicln("Cannot open file")
+			return "", err
+		}
+		jpeg.Encode(file, img, nil)
+		return filename, nil
+	}
+	return "", errors.New("cant infer image type")
+}

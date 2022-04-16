@@ -7,7 +7,7 @@ import (
 type Temperature struct {
 	//gorm.Model
 	ID          uint `gorm:"primaryKey;autoincrement:true"`
-	Timestamp   time.Time
+	Timestamp   string
 	Temperature float64
 	TimeCreated time.Time
 }

@@ -35,7 +35,7 @@ func (t TemperatureModel) StoreTemperature(temperature *entity.Temperature) erro
 func (t TemperatureModel) GetTemperatureByMonth(month, year int) ([]*entity.Temperature, error) {
 	var temperature []*entity.Temperature
 	thisDate, toDate := constructDate(month, year)
-	if err := t.db.Find(&temperature).Where("timestamp BETWEEN ? AND ?", thisDate, toDate).Error; err != nil {
+	if err := t.db.Find(&temperature).Where("time_created BETWEEN ? AND ?", thisDate, toDate).Error; err != nil {
 		return nil, err
 	}
 	return temperature, nil
