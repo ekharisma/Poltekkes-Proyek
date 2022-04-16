@@ -107,7 +107,7 @@ func processCsv(temperature []*entity.Temperature) (string, error) {
 }
 
 func processZipFile(filepaths []string) (string, error) {
-	fmt.Println("creating zip archive...")
+	log.Println("creating zip archive...")
 	zipName := fmt.Sprintf("download/archive-%v-%v.zip", time.Now().Month(), time.Now().Year())
 	archive, err := os.Create(zipName)
 	if err != nil {

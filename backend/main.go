@@ -34,7 +34,7 @@ func main() {
 	router.POST(ROOT+"temperature", temperatureController.GetTemperatureByMonth)
 	router.POST(ROOT+"temperature/download", temperatureController.GetTemperatureFile)
 
-	mqttClient.Subscribe("/emulator/data", QOS, mqttController.TemperatureProcessor)
+	mqttClient.Subscribe("ahaha_JsonData", QOS, mqttController.TemperatureProcessor)
 
 	err := router.Run(":8080")
 	if err != nil {
