@@ -1,0 +1,29 @@
+FROM golang:1.18.1-alpine3.15 AS build
+
+WORKDIR /app
+
+COPY go.mod .
+
+COPY go.sum .
+
+RUN go mod download
+
+COPY . ./
+
+RUN ls
+
+RUN go build -o /build/web-service
+
+RUN ls build
+
+### Deployment
+
+FROM alpine:latest
+
+WORKDIR /
+
+COPY --from=build /build/web-service /build/web-service
+
+EXPOSE 8080
+
+ENTRYPOINT ["/build/web-service"]
