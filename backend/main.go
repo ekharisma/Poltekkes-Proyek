@@ -18,18 +18,10 @@ func main() {
 	db := service.GetPostgresDBClient()
 	mqttClient := service.GetMqttClient()
 	telegramClient := service.GetTelegramBotClient()
-	userModel := model.CreateUserModel(db)
 	temperatureModel := model.CreateTemperatureModel(db)
-	userController := controller.CreateUserController(userModel)
 	temperatureController := controller.CreateTemperatureController(temperatureModel)
 	telegramController := controller.CreateTelegramController(telegramClient)
 	mqttController := controller.CreateMqttController(temperatureModel, &mqttClient, db, telegramController)
-
-	router.GET(ROOT+"user", userController.GetUsers)
-	router.GET(ROOT+"user/:id", userController.GetUserById)
-	router.POST(ROOT+"user", userController.CreateUser)
-	router.PATCH(ROOT+"user/:id", userController.UpdateUser)
-	router.DELETE(ROOT+"user/:id", userController.DeleteUser)
 
 	router.POST(ROOT+"temperature", temperatureController.GetTemperatureByMonth)
 	router.POST(ROOT+"temperature/download", temperatureController.GetTemperatureFile)
