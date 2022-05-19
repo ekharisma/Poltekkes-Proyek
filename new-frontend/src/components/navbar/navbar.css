@@ -1,0 +1,33 @@
+.navbar {
+    display: flex;
+    min-height: 10vh;
+    border-bottom: 1px solid #eeeeee;
+    
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #001d3d;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 10;
+
+}
+
+.title {
+    font-size: 20px;
+    color: #00171f;
+}

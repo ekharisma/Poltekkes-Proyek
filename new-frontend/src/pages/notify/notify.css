@@ -1,0 +1,31 @@
+.notify {
+    display: flex;
+
+}
+
+.notifyContainer {
+    background-color: #F8F8F8;
+    min-height: 90vh;
+    flex: 10;
+    padding: 32px;
+
+}
+
+.notifyLabel {
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 29px;
+
+    color: #001D3D;
+    margin-top: 32px;
+    text-align: center;
+}
+
+.qrcodeContainer{
+    text-align: center;
+}
+
+.qrcode {
+    width: 25%;
+    
+}
