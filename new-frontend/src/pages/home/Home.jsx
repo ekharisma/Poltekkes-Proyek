@@ -19,9 +19,9 @@ const Home = () => {
                     <Selector />
                     <p className='homeLabel mt'>This month data summary</p>
                     <div className="widgets">
-                        <Widget title="Maximum" suhu="15"/>
-                        <Widget title="Average" suhu="7"/>
-                        <Widget title="Minimum" suhu="5"/>
+                        <Widget title="Maximum" suhu="15" />
+                        <Widget title="Average" suhu="7" />
+                        <Widget title="Minimum" suhu="5" />
                     </div>
                     <p className='homeLabel mt'>Realtime data update</p>
                     <div>

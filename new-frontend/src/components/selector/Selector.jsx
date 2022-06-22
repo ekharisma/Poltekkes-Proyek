@@ -4,8 +4,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-export default function Selector() {
-    const [value, setValue] = React.useState(null);
+export default function Selector(props) {
+    const [dateValue, setValue] = React.useState(new Date());
 
     return (
         <div className="selector">
@@ -13,14 +13,19 @@ export default function Selector() {
                 <DatePicker
                     views={['year', 'month']}
                     label="Select month"
-                    value={value}
+
+                    value={dateValue}
                     onChange={(newValue) => {
                         setValue(newValue);
+
+                        //console.log(Date.parse(value));
+                        // console.log(value.getMonth(), value.getFullYear());
                     }}
                     renderInput={(params) => <TextField {...params} />}
                 />
             </LocalizationProvider>
+            {/* <h1>{dateValue.getMonth()}</h1>
+            <h1>{dateValue.getFullYear()}</h1> */}
         </div>
-
     );
 }
